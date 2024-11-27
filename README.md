@@ -1,2 +1,2 @@
 # Opensource
-Test Repository
+24-2학기 오픈소스소프트웨어 기말 텀프로젝트
