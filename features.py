@@ -32,5 +32,3 @@ def extract_features(file_path):
 
 
 
-
-
