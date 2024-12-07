@@ -1,7 +1,28 @@
 import numpy as np
-from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Dense, Conv1D, Flatten, MaxPooling1D
-from sklearn.model_selection import train_test_split
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Conv1D, LSTM, Flatten, MaxPooling1D
+from tensorflow.keras.optimizers import Adam
+
+
+# 딥러닝 모델 정의 (CNN + LSTM)
+def build_model(input_shape):
+    model = Sequential()
+
+    # 1D CNN 레이어 (특징 추출)
+    model.add(Conv1D(64, 3, activation='relu', input_shape=input_shape))
+    model.add(MaxPooling1D(pool_size=2))
+
+    # LSTM 레이어 추가 (시간적 의존성 학습)
+    model.add(LSTM(128, return_sequences=False))  # LSTM 추가, return_sequences=False는 출력이 1D로 나오도록 설정
+
+    # 완전 연결층
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))  # 이진 분류
+
+    # 모델 컴파일
+    model.compile(optimizer=Adam(), loss='binary_crossentropy', metrics=['accuracy'])
+
+    return model
 
 # 딥러닝 모델 정의
 def build_model(input_shape):
