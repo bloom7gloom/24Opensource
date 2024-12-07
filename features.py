@@ -1,60 +1,73 @@
-from pydub import AudioSegment
-import librosa
 import numpy as np
-import os
+from sklearn.model_selection import train_test_split
+import librosa
 import random
 
-# FFmpeg 경로 설정 (FFmpeg가 시스템에 설치되어 있어야 함)
-AudioSegment.ffmpeg = "C:\\ffmpeg\\bin\\ffmpeg.exe"  # 실제 FFmpeg 경로로 수정
-
-# MP3 또는 M4A 파일에서 특징을 추출하는 함수
+# 특징 추출 함수
 def extract_features(file_path):
-    # 오디오 파일을 WAV로 변환 (MP3, M4A 모두 처리 가능)
-    audio = AudioSegment.from_file(file_path)  # 이제 MP3와 M4A 모두 처리 가능
-    wav_path = "temp.wav"  # 임시 WAV 파일 경로
-    audio.export(wav_path, format="wav")
-
-    # librosa를 사용하여 WAV 파일을 로드
-    y, sr = librosa.load(wav_path, sr=None)
-
-    # MFCC 추출
+    y, sr = librosa.load(file_path, sr=None)
     mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
-
-    # MFCC 평균값을 반환 (시간에 따른 평균)
     features = np.mean(mfcc.T, axis=0)
+    return np.pad(features, (0, 100 - len(features)), 'constant', constant_values=0)
 
-    # 특성 벡터 길이를 100으로 맞추기 위해 패딩 추가
-    features_padded = np.pad(features, (0, 100 - len(features)), 'constant', constant_values=0)
-
-    # 임시 파일 삭제
-    os.remove(wav_path)
-
-    return features_padded
-
-
+# 데이터 증강 함수
 def augment_audio(y, sr):
     augment_type = random.choice(["pitch", "speed", "noise", "none"])
 
     if augment_type == "pitch":
-        # 피치 변경
-        y = librosa.effects.pitch_shift(y, sr, n_steps=random.randint(-2, 2))
-
+        y = librosa.effects.pitch_shift(y, sr, n_steps=random.randint(-2, 2))  # 피치 변경
     elif augment_type == "speed":
-        # 속도 변경
-        speed_change = random.uniform(0.9, 1.1)  # 속도 변경 범위: 0.9배에서 1.1배 사이
+        speed_change = random.uniform(0.9, 1.1)  # 속도 변경
         y = librosa.effects.time_stretch(y, speed_change)
-
     elif augment_type == "noise":
-        # 노이즈 추가
-        noise = np.random.randn(len(y)) * 0.005  # 작은 양의 가우시안 노이즈 추가
+        noise = np.random.randn(len(y)) * 0.005  # 작은 노이즈 추가
         y = y + noise
-    elif augment_type == "volume":
-        # 볼륨 변경
-        volume_factor = random.uniform(0.7, 1.5)  # 볼륨을 0.7배에서 1.5배 사이로 랜덤 변경
-        y = change_volume(y, volume_factor)
 
     return y
 
-# 볼륨 변경 함수
-def change_volume(y, factor=1.5):
-    return y * factor
+# 데이터 증강을 포함한 특징 추출
+def extract_features_with_augmentation(file_path, augment=False):
+    y, sr = librosa.load(file_path, sr=None)
+
+    if augment:
+        y = augment_audio(y, sr)
+
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+    features = np.mean(mfcc.T, axis=0)
+    return np.pad(features, (0, 100 - len(features)), 'constant', constant_values=0)
+
+# 데이터 증강 후 데이터셋 확장
+def augment_dataset(file_paths, labels):
+    augmented_X, augmented_y = [], []
+
+    for file_path, label in zip(file_paths, labels):
+        # 원본 데이터
+        augmented_X.append(extract_features(file_path))
+        augmented_y.append(label)
+
+        # 증강 데이터 생성
+        for _ in range(3):  # 3개의 증강 데이터 생성
+            augmented_X.append(extract_features_with_augmentation(file_path, augment=True))
+            augmented_y.append(label)
+
+    return np.array(augmented_X), np.array(augmented_y)
+
+# 파일 경로 및 레이블
+file_paths = [
+    "C:\\Users\\puppy\\ex\\1.1.mp3",
+    "C:\\Users\\puppy\\ex\\1.2.mp3",
+    "C:\\Users\\puppy\\ex\\1.3.mp3",
+    "C:\\Users\\puppy\\ex\\0.1.mp3",
+    "C:\\Users\\puppy\\ex\\0.2.mp3",
+    "C:\\Users\\puppy\\ex\\0.3.mp3"
+]
+labels = [1, 1, 1, 0, 0, 0]  # 1: 딥보이스, 0: 일반 목소리
+
+# 데이터 증강 및 확장
+X, y = augment_dataset(file_paths, labels)
+
+# 데이터 분할
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+print(f"훈련 데이터 크기: {X_train.shape}, 검증 데이터 크기: {X_val.shape}")
+
