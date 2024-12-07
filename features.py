@@ -48,7 +48,13 @@ def augment_audio(y, sr):
         # 노이즈 추가
         noise = np.random.randn(len(y)) * 0.005  # 작은 양의 가우시안 노이즈 추가
         y = y + noise
-
+    elif augment_type == "volume":
+        # 볼륨 변경
+        volume_factor = random.uniform(0.7, 1.5)  # 볼륨을 0.7배에서 1.5배 사이로 랜덤 변경
+        y = change_volume(y, volume_factor)
 
     return y
 
+# 볼륨 변경 함수
+def change_volume(y, factor=1.5):
+    return y * factor
