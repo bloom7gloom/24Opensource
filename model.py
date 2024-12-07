@@ -8,18 +8,17 @@ import random
 
 # 데이터 증강 함수
 def augment_audio(y, sr):
-    augment_type = random.choice(["pitch", "speed", "noise", "none"])
+    # 피치 변경
+    y = librosa.effects.pitch_shift(y, sr, n_steps=random.randint(-2, 2))  # 피치 변경
 
-    if augment_type == "pitch":
-        y = librosa.effects.pitch_shift(y, sr, n_steps=random.randint(-2, 2))  # 피치 변경
-    elif augment_type == "speed":
-        speed_change = random.uniform(0.9, 1.1)  # 속도 변경
-        y = librosa.effects.time_stretch(y, speed_change)
-    elif augment_type == "noise":
-        noise = np.random.randn(len(y)) * 0.005  # 작은 노이즈 추가
-        y = y + noise
+    # 속도 변경 (rate는 speed_change로 설정)
+    speed_change = random.uniform(0.8, 1.2)  # 속도 비율을 랜덤으로 설정
+    y = librosa.effects.time_stretch(y, speed_change)  # 속도 변경
 
+    # 기타 오디오 증강 (예: 잡음 추가 등)
     return y
+
+
 
 # 특징 추출 함수 (원본 데이터)
 def extract_features(file_path):

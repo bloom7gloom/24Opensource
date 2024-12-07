@@ -6,7 +6,7 @@ import numpy as np
 from tensorflow.keras.models import load_model
 
 def load_trained_model():
-    model_path = "C:\\Users\\puppy\\PycharmProjects\\test\\voice_model.h5"  # 모델 파일 경로
+    model_path = "C:\\Users\\puppy\\PycharmProjects\\test\\voice_model_cnn_lstm.h5"  # 모델 파일 경로
     return load_model(model_path)
 
 class VoiceApp:
