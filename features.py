@@ -2,6 +2,7 @@ from pydub import AudioSegment
 import librosa
 import numpy as np
 import os
+import random
 
 # FFmpeg 경로 설정 (FFmpeg가 시스템에 설치되어 있어야 함)
 AudioSegment.ffmpeg = "C:\\ffmpeg\\bin\\ffmpeg.exe"  # 실제 FFmpeg 경로로 수정
@@ -29,6 +30,14 @@ def extract_features(file_path):
     os.remove(wav_path)
 
     return features_padded
+
+
+def augment_audio(y, sr):
+    augment_type = random.choice(["pitch", "speed", "noise", "none"])
+
+    if augment_type == "pitch":
+        # 피치 변경
+        y = librosa.effects.pitch_shift(y, sr, n_steps=random.randint(-2, 2))
 
 
 
