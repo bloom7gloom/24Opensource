@@ -39,5 +39,10 @@ def augment_audio(y, sr):
         # 피치 변경
         y = librosa.effects.pitch_shift(y, sr, n_steps=random.randint(-2, 2))
 
+    elif augment_type == "speed":
+        # 속도 변경
+        speed_change = random.uniform(0.9, 1.1)  # 속도 변경 범위: 0.9배에서 1.1배 사이
+        y = librosa.effects.time_stretch(y, speed_change)
 
+    return y
 
