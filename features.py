@@ -44,5 +44,11 @@ def augment_audio(y, sr):
         speed_change = random.uniform(0.9, 1.1)  # 속도 변경 범위: 0.9배에서 1.1배 사이
         y = librosa.effects.time_stretch(y, speed_change)
 
+    elif augment_type == "noise":
+        # 노이즈 추가
+        noise = np.random.randn(len(y)) * 0.005  # 작은 양의 가우시안 노이즈 추가
+        y = y + noise
+
+
     return y
 
