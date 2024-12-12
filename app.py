@@ -5,6 +5,7 @@ from features import extract_features
 import numpy as np
 from tensorflow.keras.models import load_model
 
+# 훈련된 모델 로드 함수
 def load_trained_model():
     model_path = "C:\\Users\\puppy\\PycharmProjects\\test\\voice_model_cnn_lstm.h5"  # 모델 파일 경로
     return load_model(model_path)
@@ -25,17 +26,27 @@ class VoiceApp:
         self.result_label.pack(pady=20)
 
     def upload_file(self):
-        # 파일 다이얼로그에서 MP3와 M4A 파일 모두 선택할 수 있도록 변경
+        # 파일 다이얼로그에서 MP3, M4A, WAV 파일 선택
         file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3;*.m4a;*.wav")])
         if file_path:
             features = extract_features(file_path)
             features = np.expand_dims(features, axis=0)  # 2D 배열로 변환
+
+            # 모델로 예측: 각 클래스에 대한 확률 반환
             prediction = self.model.predict(features)
-            if prediction > 0.5:
-                result = "딥보이스입니다."
+
+            # 딥보이스일 확률
+            deep_voice_prob = prediction[0][0] * 100
+            # 일반 목소리일 확률 (1 - 딥보이스 확률)
+            normal_voice_prob = (1 - prediction[0][0]) * 100
+
+            # 예측된 확률에 따라 결과 출력
+            if deep_voice_prob > normal_voice_prob:
+                result = f"딥보이스일 확률: {deep_voice_prob:.2f}%"
             else:
-                result = "일반 목소리입니다."
-            self.result_label.config(text=f"예측 결과: {result}")
+                result = f"일반 목소리일 확률: {normal_voice_prob:.2f}%"
+
+            self.result_label.config(text=f"예측 결과:\n{result}")
 
 if __name__ == "__main__":
     root = tk.Tk()
