@@ -30,15 +30,21 @@ class VoiceApp:
         if file_path:
             features = extract_features(file_path)
             features = np.expand_dims(features, axis=0)  # 2D 배열로 변환
-            prediction = self.model.predict(features)
+            prediction = self.model.predict(features)[0][0]  # 예측값 추출
+
+            deepvoice_prob = prediction * 100  # 딥보이스 확률 계산
+            normalvoice_prob = (1 - prediction) * 100  # 일반 목소리 확률 계산
+
             if prediction > 0.5:
-                result = "딥보이스입니다."
+                result = f"예측 결과: 딥보이스일 확률: {deepvoice_prob:.2f}%"
             else:
-                result = "일반 목소리입니다."
-            self.result_label.config(text=f"예측 결과: {result}")
+                result = f"예측 결과: 일반 목소리일 확률: {normalvoice_prob:.2f}%"
+
+            self.result_label.config(text=result)
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = VoiceApp(root)
     root.mainloop()
+
 
