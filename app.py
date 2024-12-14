@@ -5,10 +5,6 @@ from features import extract_features
 import numpy as np
 from tensorflow.keras.models import load_model
 
-def load_trained_model():
-    model_path = "C:\\Users\\puppy\\PycharmProjects\\test\\voice_model_cnn_lstm.h5"  # 모델 파일 경로
-    return load_model(model_path)
-
 class VoiceApp:
     def __init__(self, root):
         self.root = root
@@ -35,16 +31,21 @@ class VoiceApp:
             deepvoice_prob = prediction * 100  # 딥보이스 확률 계산
             normalvoice_prob = (1 - prediction) * 100  # 일반 목소리 확률 계산
 
+            # 예측 결과와 신뢰도 계산
             if prediction > 0.5:
-                result = f"예측 결과: 딥보이스일 확률: {deepvoice_prob:.2f}%"
+                confidence = '높음' if deepvoice_prob > 70 else '보통' if deepvoice_prob > 50 else '낮음'
+                result = f"예측 결과: 딥보이스일 확률: {deepvoice_prob:.2f}%\n신뢰도: {confidence}"
             else:
-                result = f"예측 결과: 일반 목소리일 확률: {normalvoice_prob:.2f}%"
+                confidence = '높음' if normalvoice_prob > 70 else '보통' if normalvoice_prob > 50 else '낮음'
+                result = f"예측 결과: 일반 목소리일 확률: {normalvoice_prob:.2f}%\n신뢰도: {confidence}"
 
+            # 결과 출력
             self.result_label.config(text=result)
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = VoiceApp(root)
     root.mainloop()
+
 
 
