@@ -10,7 +10,11 @@ import time
 # 모델 로드
 def load_trained_model():
     model_path = "voice_model_cnn_lstm.h5"  # 모델 파일 경로
-    return load_model(model_path)
+    try:
+        return load_model(model_path)
+    except FileNotFoundError:
+        print(f"Model file not found: {model_path}")
+        return None
 
 # 음성 특징 추출
 def extract_features(audio_data, sr=22050):
@@ -84,7 +88,12 @@ class VoiceApp:
         self.root = root
         self.root.title("딥보이스 판별기")
 
-        self.model = load_trained_model()  # 모델 로드
+        # 모델 로드
+        self.model = load_trained_model()
+        if self.model is None:
+            self.root.quit()  # 모델이 없으면 애플리케이션 종료
+
+        # UI 구성
         self.label = tk.Label(root, text="음성 파일을 업로드하거나 실시간 녹음을 시작하세요.", font=('Arial', 14))
         self.label.pack(pady=20)
 
@@ -129,6 +138,7 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = VoiceApp(root)
     root.mainloop()
+
 
 
 

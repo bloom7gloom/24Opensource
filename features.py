@@ -1,14 +1,14 @@
 import numpy as np
-from sklearn.model_selection import train_test_split
 import librosa
 import random
+from sklearn.model_selection import train_test_split
 
-# 특징 추출 함수
+# 특징 추출 함수 (MFCC)
 def extract_features(file_path):
     y, sr = librosa.load(file_path, sr=None)
-    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
-    features = np.mean(mfcc.T, axis=0)
-    return np.pad(features, (0, 100 - len(features)), 'constant', constant_values=0)
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)  # 13개의 MFCC 계수 추출
+    features = np.mean(mfcc.T, axis=0)  # MFCC의 평균을 추출
+    return np.pad(features, (0, 100 - len(features)), 'constant', constant_values=0)  # 길이를 맞추기 위해 패딩
 
 # 데이터 증강 함수
 def augment_audio(y, sr):
@@ -32,9 +32,9 @@ def extract_features_with_augmentation(file_path, augment=False):
     if augment:
         y = augment_audio(y, sr)
 
-    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
-    features = np.mean(mfcc.T, axis=0)
-    return np.pad(features, (0, 100 - len(features)), 'constant', constant_values=0)
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)  # 13개의 MFCC 계수 추출
+    features = np.mean(mfcc.T, axis=0)  # MFCC의 평균을 추출
+    return np.pad(features, (0, 100 - len(features)), 'constant', constant_values=0)  # 길이를 맞추기 위해 패딩
 
 # 데이터 증강 후 데이터셋 확장
 def augment_dataset(file_paths, labels):
