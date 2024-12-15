@@ -34,7 +34,7 @@ def train_model(a_folder, b_folder):
     cnn_lstm_model = build_cnn_lstm_model(input_shape)
 
     # 훈련
-    cnn_lstm_model.fit(X_train, y_train, epochs=10, validation_data=(X_val, y_val), batch_size=32)
+    cnn_lstm_model.fit(X_train, y_train, epochs=100, validation_data=(X_val, y_val), batch_size=32)
     cnn_lstm_model.save('voice_model_cnn_lstm.h5')
 
 # 모델 로드
@@ -47,8 +47,8 @@ def load_trained_model():
         return None
 
 # 훈련 데이터 준비 (폴더 경로 수정)
-a_folder = "C:\\Users\\puppy\\ex\\real"  # 딥보이스 데이터가 저장된 폴더 경로
-b_folder = "C:\\Users\\puppy\\ex\\deep"  # 일반 목소리 데이터가 저장된 폴더 경로
+a_folder = "C:\\Users\\puppy\\ex\\deep"  # 딥보이스 데이터가 저장된 폴더 경로
+b_folder = "C:\\Users\\puppy\\ex\\real"  # 일반 목소리 데이터가 저장된 폴더 경로
 
 # 모델 훈련
 train_model(a_folder, b_folder)
