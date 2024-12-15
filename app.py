@@ -6,6 +6,8 @@ import librosa
 import threading
 from tensorflow.keras.models import load_model
 import time
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
 
 # 모델 로드
 def load_trained_model():

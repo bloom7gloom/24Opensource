@@ -1,7 +1,11 @@
+import os
 import numpy as np
 import librosa
 import random
 from sklearn.model_selection import train_test_split
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
+
 
 # 특징 추출 함수 (MFCC)
 def extract_features(file_path):
@@ -37,36 +41,50 @@ def extract_features_with_augmentation(file_path, augment=False):
     return np.pad(features, (0, 100 - len(features)), 'constant', constant_values=0)  # 길이를 맞추기 위해 패딩
 
 # 데이터 증강 후 데이터셋 확장
-def augment_dataset(file_paths, labels):
+def augment_dataset(a_folder, b_folder):
     augmented_X, augmented_y = [], []
 
-    for file_path, label in zip(file_paths, labels):
-        # 원본 데이터
+    # 딥보이스 (a_folder)와 일반 목소리 (b_folder)에서 파일을 자동으로 로드
+    a_files = [os.path.join(a_folder, f) for f in os.listdir(a_folder) if f.endswith(('.mp3', '.wav', '.m4a'))]
+    b_files = [os.path.join(b_folder, f) for f in os.listdir(b_folder) if f.endswith(('.mp3', '.wav', '.m4a'))]
+
+    # 딥보이스 데이터를 먼저 추가
+    for file_path in a_files:
         augmented_X.append(extract_features(file_path))
-        augmented_y.append(label)
+        augmented_y.append(1)  # 1: 딥보이스
 
         # 증강 데이터 생성
         for _ in range(3):  # 3개의 증강 데이터 생성
             augmented_X.append(extract_features_with_augmentation(file_path, augment=True))
-            augmented_y.append(label)
+            augmented_y.append(1)
+
+    # 일반 목소리 데이터를 추가
+    for file_path in b_files:
+        augmented_X.append(extract_features(file_path))
+        augmented_y.append(0)  # 0: 일반 목소리
+
+        # 증강 데이터 생성
+        for _ in range(3):  # 3개의 증강 데이터 생성
+            augmented_X.append(extract_features_with_augmentation(file_path, augment=True))
+            augmented_y.append(0)
 
     return np.array(augmented_X), np.array(augmented_y)
 
-# 파일 경로 및 레이블
-file_paths = [
-    "C:\\Users\\puppy\\ex\\1.1.mp3",
-    "C:\\Users\\puppy\\ex\\1.2.mp3",
-    "C:\\Users\\puppy\\ex\\1.3.mp3",
-    "C:\\Users\\puppy\\ex\\0.1.mp3",
-    "C:\\Users\\puppy\\ex\\0.2.mp3",
-    "C:\\Users\\puppy\\ex\\0.3.mp3"
-]
-labels = [1, 1, 1, 0, 0, 0]  # 1: 딥보이스, 0: 일반 목소리
 
-# 데이터 증강 및 확장
-X, y = augment_dataset(file_paths, labels)
+def augment_dataset_from_folders(a_folder, b_folder):
+    a_files = [os.path.join(a_folder, f) for f in os.listdir(a_folder) if f.endswith(('.mp3', '.wav', '.m4a'))]
+    b_files = [os.path.join(b_folder, f) for f in os.listdir(b_folder) if f.endswith(('.mp3', '.wav', '.m4a'))]
 
-# 데이터 분할
-X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+    # a_folder에서 딥보이스 데이터 처리
+    augmented_X, augmented_y = [], []
 
-print(f"훈련 데이터 크기: {X_train.shape}, 검증 데이터 크기: {X_val.shape}")
+    for file_path in a_files:
+        augmented_X.append(extract_features_with_augmentation(file_path, augment=True))
+        augmented_y.append(1)  # 딥보이스 레이블
+
+    # b_folder에서 일반 목소리 데이터 처리
+    for file_path in b_files:
+        augmented_X.append(extract_features_with_augmentation(file_path, augment=True))
+        augmented_y.append(0)  # 일반 목소리 레이블
+
+    return np.array(augmented_X), np.array(augmented_y)
